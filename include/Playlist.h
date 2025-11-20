@@ -44,6 +44,9 @@ public:
      * Constructor
      */
     Playlist(const std::string& name="");
+    // לבנתיים
+    Playlist(const Playlist&) = delete;
+    Playlist& operator=(const Playlist&) = delete;
 
     /**
      * Destructor
