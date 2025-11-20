@@ -38,9 +38,11 @@
     
     // File associations
     "files.associations": {
+        "*.ejs": "html",
         "*.h": "cpp",
         "*.cpp": "cpp",
-        "*.txt": "plaintext"
+        "*.txt": "plaintext",
+        "iostream": "cpp"
     },
     
     // Editor settings for academic integrity

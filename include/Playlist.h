@@ -15,13 +15,23 @@
  * clear ownership and safe iteration without leaks.
  */
 
+
+
 struct PlaylistNode {
     AudioTrack* track; 
     PlaylistNode* next;
 
     PlaylistNode(AudioTrack* t) : track(t), next(nullptr) {}
-    ~PlaylistNode() = default;
+    
+    // דיסטרקטור מוחר את הטראק כי הוא האוונר
+    ~PlaylistNode() { 
+        std::cout<<"deleting track at "<<track<<std::endl;
+        delete track; 
+    }
 };
+
+
+
 
 class Playlist {
 private:
