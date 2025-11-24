@@ -88,12 +88,22 @@ AudioTrack& AudioTrack::operator=(const AudioTrack& other) {
     return *this;
 }
 
-AudioTrack::AudioTrack(AudioTrack&& other) noexcept {
+AudioTrack::AudioTrack(AudioTrack&& other) noexcept 
+    //מתחילים בהעברות הקלות - מחרוזות ו-וקטורים בעזרת std::move
+    :   title(std::move(other.title)),
+        artists(std::move(other.artists)),
+        duration_seconds(other.duration_seconds),
+        bpm(other.bpm),
+        waveform_size(other.waveform_size),
+        //נעביר את המצביע:
+        waveform_data(other.waveform_data)
+    {
     // TODO: Implement the move constructor
     #ifdef DEBUG
     std::cout << "AudioTrack move constructor called for: " << other.title << std::endl;
     #endif
-    // Your code here...
+    //נמנע מצביע נוסף לזיכרון שעשוי להימחק - יגרום למחיקה כפולה כאשר נמחק את this
+    other.waveform_data = nullptr;
 }
 
 AudioTrack& AudioTrack::operator=(AudioTrack&& other) noexcept {
@@ -102,7 +112,17 @@ AudioTrack& AudioTrack::operator=(AudioTrack&& other) noexcept {
     #ifdef DEBUG
     std::cout << "AudioTrack move assignment called for: " << other.title << std::endl;
     #endif
-    // Your code here...
+    //נבדוק שאנחנו לא מעבירים את עצמנו:
+    if(this == &other)
+        return *this;
+    //נתחיל בהעברות הקלות, בדומה למתודה הקודמת...
+    this->title = std::move(other.title);
+    this->artists = std::move(other.artists);
+    this->duration_seconds = other.duration_seconds;
+    this->bpm = other.bpm;
+    this->waveform_size = other.waveform_size;
+    //העברת המצביע + ניקוי המצביע other
+    std::swap(this->waveform_data, other.waveform_data);
     return *this;
 }
 
@@ -110,4 +130,5 @@ void AudioTrack::get_waveform_copy(double* buffer, size_t buffer_size) const {
     if (buffer && waveform_data && buffer_size <= waveform_size) {
         std::memcpy(buffer, waveform_data, buffer_size * sizeof(double));
     }
+
 }
