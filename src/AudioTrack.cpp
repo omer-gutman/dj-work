@@ -87,12 +87,21 @@ AudioTrack& AudioTrack::operator=(const AudioTrack& other) {
     return *this;
 }
 
-AudioTrack::AudioTrack(AudioTrack&& other) noexcept {
+AudioTrack::AudioTrack(AudioTrack&& other) noexcept 
+    //נתחיל בהזזת הטיפוסים הפשוטים (מחרוזת ו-וקטור נעביר עם std::move).
+    :   title(std::move(other.title)),
+        artists(std::move(other.artists)),
+        duration_seconds(other.duration_seconds), 
+        bpm(other.bpm), 
+        waveform_size(other.waveform_size),
+        //"נגנוב" את המצביע
+        waveform_data(other.waveform_data)
+    {
     // TODO: Implement the move constructor
     #ifdef DEBUG
     std::cout << "AudioTrack move constructor called for: " << other.title << std::endl;
     #endif
-    // Your code here...
+    other.waveform_data = nullptr;
 }
 
 AudioTrack& AudioTrack::operator=(AudioTrack&& other) noexcept {
@@ -101,7 +110,20 @@ AudioTrack& AudioTrack::operator=(AudioTrack&& other) noexcept {
     #ifdef DEBUG
     std::cout << "AudioTrack move assignment called for: " << other.title << std::endl;
     #endif
-    // Your code here...
+    //נתחיל בבדיקה שאנחנו לא "מזיזים את עצמנו"
+    if(this == &other)
+      return *this;
+    //נמחק זיכרון ישן שלא יישאר ללא מצביע
+    delete[] this->waveform_data;
+    //נזיז את המידע בין האובייקטים בדומה למתודה הקודמת
+    this->title = std::move(other.title); //std::string
+    this->artists = std::move(other.artists); //std::vector
+    this->duration_seconds = other.duration_seconds; //int
+    this->bpm = other.bpm; //int
+    this->waveform_size = other.waveform_size; //int
+    this->waveform_data = other.waveform_data; //pointer
+    //נדאג שהמצביע הקודם לא יצביע על המידע שאליו מצביע המצביע שלנו, כדי שהמידע לא יימחק בטעות ונימנע ממחיקה כפולה
+    other.waveform_data = nullptr;
     return *this;
 }
 
@@ -111,3 +133,4 @@ void AudioTrack::get_waveform_copy(double* buffer, size_t buffer_size) const {
     }
 
 }
+
