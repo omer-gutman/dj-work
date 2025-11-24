@@ -23,11 +23,8 @@ struct PlaylistNode {
 
     PlaylistNode(AudioTrack* t) : track(t), next(nullptr) {}
     
-    // דיסטרקטור מוחר את הטראק כי הוא האוונר
-    ~PlaylistNode() { 
-        std::cout<<"deleting track at "<<track<<std::endl;
-        delete track; 
-    }
+    //דיסטרקטור לא מוחק את הטראקים כי הבעלים הוא המיין
+    ~PlaylistNode() = defualt;
 };
 
 
@@ -100,6 +97,7 @@ public:
     std::vector<AudioTrack*> getTracks() const;
 
 };
+
 
 
 
