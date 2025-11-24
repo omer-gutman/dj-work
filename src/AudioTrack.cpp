@@ -35,16 +35,30 @@ AudioTrack::~AudioTrack() {
     #ifdef DEBUG
     std::cout << "AudioTrack destructor called for: " << title << std::endl;
     #endif
-    // Your code here...
+    delete[] this->waveform_data;
 }
 
 AudioTrack::AudioTrack(const AudioTrack& other)
+  : title(other.title), 
+    artists(other.artists), 
+    duration_seconds(other.duration_seconds), 
+    bpm(other.bpm), 
+    waveform_size(other.waveform_size)
 {
     // TODO: Implement the copy constructor
     #ifdef DEBUG
     std::cout << "AudioTrack copy constructor called for: " << other.title << std::endl;
     #endif
-    // Your code here...
+    //הקצאה חדשה של מקום נוסף בערימה להעתק:
+    this->waveform_data = new double[this->waveform_size];
+    /*פרמטרים של פקודת קופי:
+    1. מצביע לנקודה ההתחלתית של מידע המקור - המידע שמעתיקים למיקום החדש.
+    2. מצביע לנקודה אחת אחרי הנקודה האחרונה שממנה מעתיקים - משיגים את זה באמצעות כתובת התחלתית + (גודל מבנה הנתונים*גודל הטיפוס)
+    3. מצביע לנקודת ההתחלה של האובייקט שאליו מעתיקים
+    */
+    std::copy(other.waveform_data, 
+      other.waveform_data+other.waveform_size, 
+      this->waveform_data);
 }
 
 AudioTrack& AudioTrack::operator=(const AudioTrack& other) {
@@ -52,7 +66,24 @@ AudioTrack& AudioTrack::operator=(const AudioTrack& other) {
     #ifdef DEBUG
     std::cout << "AudioTrack copy assignment called for: " << other.title << std::endl;
     #endif
-    // Your code here...
+    
+    //1. נבדוק אם אנחנו לא מנסים להקצות לעצמנו (ת'יס = אות'ר)
+    if(this == &other)
+      return *this;
+    //2. נמחק את המידע במיקום המקורי. (זה משחרר את המיקום לכן צריך להקצות מיקום חדש לתהליך).
+    delete[] this->waveform_data;
+    //3. העתק רדוד:
+    this->title = other.title; //std::string
+    this->artists = other.artists; //std::vector
+    this->duration_seconds = other.duration_seconds; //int
+    this->bpm = other.bpm; //int
+    this->waveform_size = other.waveform_size; //int
+    //4. נקצה מיקום חדש בערימה.
+    this->waveform_data = new double[this->waveform_size];
+    //5. נבצע העתק עמוק כמו במתודה הקודמת.
+    std::copy(other.waveform_data, 
+      other.waveform_data+other.waveform_size, 
+      this->waveform_data);
     return *this;
 }
 
@@ -78,4 +109,5 @@ void AudioTrack::get_waveform_copy(double* buffer, size_t buffer_size) const {
     if (buffer && waveform_data && buffer_size <= waveform_size) {
         std::memcpy(buffer, waveform_data, buffer_size * sizeof(double));
     }
+
 }
