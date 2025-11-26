@@ -37,7 +37,13 @@ public:
      * Think about ownership and resource management.
      * Is the default destructor sufficient here?
      */
-    ~PointerWrapper() =default;
+    //ראלף ההורס - אנחנו רוצים שהמצביע החכם יחזיק את האחריות על מחיקת האובייקטים.
+    //באופן הזה, ברגע שנצא מה-AF מיידית מובטח לנו שהאובייקט יימחק.
+    //שימושי מאוד בהסתכלות על AudioTrack.
+    // מבטל את הצורך למחוק את האובייקטים 1-1 בmain כי הם יימחקו אוטומטית כשהmain יסיים לרוץ.
+    ~PointerWrapper() {
+        delete ptr;
+    }
 
     // ========== COPY OPERATIONS (DELETED) ==========
 
@@ -60,7 +66,10 @@ public:
      * HINT: How should ownership transfer from one wrapper to another?
      * What should happen to the source wrapper after the move?
      */
-    PointerWrapper(PointerWrapper&& other) noexcept {}
+    PointerWrapper(PointerWrapper&& other) noexcept 
+    :   ptr(other.ptr) {
+        other.ptr = nullptr;
+    }
 
     /**
      * TODO: Implement move assignment operator
@@ -68,6 +77,10 @@ public:
      * Don't forget about self-assignment!
      */
     PointerWrapper& operator=(PointerWrapper&& other) noexcept {
+        if(this == &other)
+            return *this;
+        std::swap(this->ptr, other.ptr);
+        other.ptr = nullptr;
         return *this;
     }
 
@@ -167,7 +180,7 @@ public:
 
 // ========== NON-MEMBER FUNCTIONS ==========
 
-/**
+/*
  * Helper function to create PointerWrapper
  * This is implemented for you as an example
  * Can you figure out when this would be useful in phase 4?

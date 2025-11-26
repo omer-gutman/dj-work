@@ -23,11 +23,8 @@ struct PlaylistNode {
 
     PlaylistNode(AudioTrack* t) : track(t), next(nullptr) {}
     
-    // דיסטרקטור מוחר את הטראק כי הוא האוונר
-    ~PlaylistNode() { 
-        std::cout<<"deleting track at "<<track<<std::endl;
-        delete track; 
-    }
+    // דיסטראקטור לא עושה כלום כי הוא לא הבעלים.
+    ~PlaylistNode() = default;
 };
 
 
