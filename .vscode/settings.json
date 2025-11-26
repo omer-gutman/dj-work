@@ -44,7 +44,8 @@
         "*.txt": "plaintext",
         "iostream": "cpp",
         "tuple": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "string": "cpp"
     },
     
     // Editor settings for academic integrity

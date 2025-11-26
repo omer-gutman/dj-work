@@ -78,18 +78,25 @@ public:
      * HINT: How do you access the object that the wrapper points to? Is this operation implementation complete?
      * @throws std::runtime_error if ptr is null
      */
-
+    // עזוב אותי מהעטיפה, תביא לי את הדבר האמיתי
     T& operator*() const {
+        if (!ptr) {
+            throw std::runtime_error("Null pointer dereference");
+        }
         return *ptr;
-    };
+    }
 
     /**
      * TODO: Implement arrow operator
      * HINT: How do you access members of the wrapped object?
      * What safety checks should you perform?
      */
+    //"תעשה לי קיצור דרך לבפנוכו
     T* operator->() const {
-        return nullptr;
+        if (!ptr) {
+             throw std::runtime_error("Null pointer dereference");
+        }
+        return ptr;
     }
 
     /**
@@ -98,8 +105,13 @@ public:
      * What should this function return?
      * @throws std::runtime_error if ptr is null
      */
-    T* get() const {
-        return nullptr; // Placeholder
+
+     //  רק להסתכל, בלי לגעת
+   T* get() const {
+        if (!ptr) {
+             throw std::runtime_error("Null pointer dereference");
+        }
+        return ptr;
     }
 
     // ========== OWNERSHIP MANAGEMENT ==========
@@ -109,8 +121,13 @@ public:
      * HINT: What does "release" mean in terms of ownership?
      * Should the wrapper still own the pointer after calling release()?
      */
+
+     // קח את המפתחות, אני מתפטר
+     //גירושים
     T* release() {
-        return nullptr;
+        T* temp = ptr;
+        ptr = nullptr;
+        return temp;
     }
 
     /**
@@ -118,7 +135,13 @@ public:
      * HINT: How do you replace the currently wrapped pointer?
      * What should happen to the old pointer?
      */
+    //זרוק את הישן לפח, תביא לי צעצוע חדש
+    //חיסול
     void reset(T* new_ptr = nullptr) {
+        if (ptr != new_ptr) {
+            delete ptr;
+            ptr = new_ptr;
+        }
     }
 
     // ========== UTILITY FUNCTIONS ==========
@@ -128,14 +151,15 @@ public:
      * HINT: When should a wrapper be considered "true" or "false"?
      * Why might the explicit keyword be important here?
      */
+    //תגיד, יש מישהו בבית?
     explicit operator bool() const {
-        return false; //placeholder
+        return ptr != nullptr;
     }
-
     /**
      * Swap two PointerWrapper objects
      * This is implemented for you as a reference
      */
+    //החלפות
     void swap(PointerWrapper& other) noexcept {
         std::swap(ptr, other.ptr);
     }
@@ -148,6 +172,7 @@ public:
  * This is implemented for you as an example
  * Can you figure out when this would be useful in phase 4?
  */
+//הקבלן
 template<typename T, typename... Args>
 PointerWrapper<T> make_pointer_wrapper(Args&&... args) {
     return PointerWrapper<T>(new T(std::forward<Args>(args)...));
@@ -158,11 +183,13 @@ PointerWrapper<T> make_pointer_wrapper(Args&&... args) {
  * HINT: How can you swap two wrapper objects?
  * Why might this be useful?
  */
+//הסטנדרט
 template<typename T>
 void swap(PointerWrapper<T>& lhs, PointerWrapper<T>& rhs) noexcept {
     // TODO: Implement global swap function
     // HINT: You can use the member swap function
     //your code here...
+    lhs.swap(rhs);
 }
 
 #endif // POINTERWRAPPER_H
