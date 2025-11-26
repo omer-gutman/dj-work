@@ -42,7 +42,9 @@
         "*.h": "cpp",
         "*.cpp": "cpp",
         "*.txt": "plaintext",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "tuple": "cpp",
+        "new": "cpp"
     },
     
     // Editor settings for academic integrity

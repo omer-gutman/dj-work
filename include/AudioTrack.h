@@ -36,6 +36,9 @@ public:
 
     // ========== RULE OF 5 - STUDENTS MUST IMPLEMENT ALL OF THESE ==========
 
+    //מתודת "חבר" - פונקציה פרטית עם גישה לשדות של המחלקה
+    //פונקציה המחליפה בין אובייקטים מסוג AudioTrack - חילוף עמוק
+    friend void swap(AudioTrack& a, AudioTrack& b) noexcept;
     /**
      * TODO: Implement destructor
      * HINT: Don't forget to clean up waveform_data!
