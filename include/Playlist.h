@@ -45,7 +45,7 @@ public:
      */
     Playlist(const std::string& name="");
     // לבנתיים
-    Playlist(const Playlist&) = delete;
+    Playlist(const Playlist&) = default;
     Playlist& operator=(const Playlist&) = delete;
 
     /**
