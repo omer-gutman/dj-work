@@ -13,8 +13,27 @@
 // - Build playlists from track indices referencing the library
 class DJLibraryService {
 public:
+    /*
+     * Constructors
+     */
     DJLibraryService(const Playlist& playlist);
     DJLibraryService() = default;
+
+    /*
+     * Destructor
+     */
+    ~DJLibraryService();
+
+    /*
+     * Copy Constructor
+     */
+    DJLibraryService(const DJLibraryService&);
+
+    /*
+     * Copy Assignment Operator
+     */
+    DJLibraryService& operator=(const DJLibraryService&);
+
 
     /**
      * @brief Build the track library from parsed config data
@@ -40,14 +59,19 @@ public:
      * @param track_title The title of the track to find.
      * @return A raw pointer to the AudioTrack if found, otherwise nullptr.
      * The library retains ownership of the track.
+     * החלטתי להפוך את המתודה לקונסט כי המצביע לא אמור להשתנות מחוץ למחלקה,
+     *  וכי נכון יותר שזה יהיה הטיפוס המוחזר.
      */
-    AudioTrack* findTrack(const std::string& track_title);
+    const AudioTrack* findTrack(const std::string& track_title) const;
 
     /**
      * @brief Get a vector of all track titles in the current playlist.
      * @return A vector of strings containing the track titles.
      */
     std::vector<std::string> getTrackTitles() const;
+
+    //helper function: swap
+    void swap(DJLibraryService&);
 
 private:
     Playlist playlist;

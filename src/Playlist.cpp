@@ -21,6 +21,35 @@ Playlist::~Playlist() {
     std::cout << "Destroying playlist: " << playlist_name << std::endl;
     #endif
 }
+//מימשנו את הדיסטרקטור אז צריך לממש את חוק ה-3
+Playlist::Playlist(const Playlist& other) {
+    //העתקת משתנים פשוטים
+    this->playlist_name = other.playlist_name; //std::string
+    this->track_count = other.track_count; //int
+    this->head = nullptr;
+    //current - מצביע שיעקוב אחרי other
+    PlaylistNode* current = other.head;
+    //tail - מצביע שישמור על זנב הרשימה החדשה ויחבר כל פעם לראש ויתקדם
+    //הכרחי כדי לשמור על ראש הרשימה החדשה ולא להפוך אותה.
+    PlaylistNode* tail = nullptr;
+
+    while(current) {
+        AudioTrack* temp = current->track->clone().release();
+        PlaylistNode* node = new PlaylistNode(temp);
+        if(this->head == nullptr) {this->head = node; }
+        else {tail->next = node; }
+        current = current->next;
+        tail = node;
+    }
+}
+//מימשנו את הדיסטרקטור אז צריך לממש את חוק ה-3
+Playlist &Playlist::operator=(const Playlist& other)
+{
+    if(this == &other) return *this;
+    Playlist temp(other);
+    std::swap(*this, temp);
+    return *this;
+}
 
 void Playlist::add_track(AudioTrack* track) {
     if (!track) {
@@ -87,7 +116,7 @@ void Playlist::display() const {
             artist_list += artist;
         });
 
-        AudioTrack* track = current->track;
+        AudioTrack* track = current->track.get(); //added .get()
         std::cout << index << ". " << track->get_title() 
                   << " by " << artist_list
                   << " (" << track->get_duration() << "s, " 
@@ -107,7 +136,7 @@ AudioTrack* Playlist::find_track(const std::string& title) const {
 
     while (current) {
         if (current->track->get_title() == title) {
-            return current->track;
+            return current->track.get(); //הוספנו get()
         }
         current = current->next;
     }
@@ -132,7 +161,7 @@ std::vector<AudioTrack*> Playlist::getTracks() const {
     PlaylistNode* current = head;
     while (current) {
         if (current->track)
-            tracks.push_back(current->track);
+            tracks.push_back(current->track.get()); //הוספנו get()
         current = current->next;
     }
     return tracks;

@@ -18,7 +18,7 @@
 
 
 struct PlaylistNode {
-    AudioTrack* track; 
+    PointerWrapper<AudioTrack> track; 
     PlaylistNode* next;
 
     PlaylistNode(AudioTrack* t) : track(t), next(nullptr) {}
@@ -41,14 +41,22 @@ public:
      * Constructor
      */
     Playlist(const std::string& name="");
-    // לבנתיים
-    Playlist(const Playlist&) = default;
-    Playlist& operator=(const Playlist&) = delete;
+    
 
     /**
-     * Destructor
+     * Destructor - implemented in Phase 1
      */
     ~Playlist();
+
+    /**
+     * Copy Constructor - to complete Rule of 3
+     */
+    Playlist(const Playlist&);
+    
+    /**
+     * Copy Assignment Operator - to complete Rule of 3
+     */
+    Playlist& operator=(const Playlist&);
 
     /**
      * Add a track to the playlist
