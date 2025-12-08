@@ -43,11 +43,18 @@ Playlist::Playlist(const Playlist& other) {
     }
 }
 //מימשנו את הדיסטרקטור אז צריך לממש את חוק ה-3
-Playlist &Playlist::operator=(const Playlist& other)
-{
-    if(this == &other) return *this;
+Playlist& Playlist::operator=(const Playlist& other) {
+    if (this == &other) return *this;
+    
+    // 1. יצירת העותק (Copy)
     Playlist temp(other);
-    std::swap(*this, temp);
+    
+    // 2. החלפת המשאבים ידנית (Swap)
+    std::swap(this->head, temp.head);
+    std::swap(this->playlist_name, temp.playlist_name);
+    std::swap(this->track_count, temp.track_count);
+    
+    // 3. ה-Destructor של temp ינקה את המשאבים הישנים (head הישן)
     return *this;
 }
 

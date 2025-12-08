@@ -66,6 +66,16 @@ public:
      */
     ~DJSession();
 
+    /**
+     * @brief Copy Constructor
+     */
+    DJSession(const DJSession&);
+
+    /**
+     * @brief Copy Assignment Operator
+     */
+    DJSession& operator=(const DJSession&);
+
     // ========== ORCHESTRATION METHODS ==========
 
 
@@ -120,4 +130,8 @@ private:
      * @brief Print final session summary with statistics
      */
     void print_session_summary() const;
+    /**
+     *swap helper
+     */
+    void swap(DJSession&) noexcept;
 };

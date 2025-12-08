@@ -13,9 +13,49 @@ DJSession::DJSession(const std::string& name, bool play_all)
     std::cout << "DJ Session System initialized: " << session_name << std::endl;
 }
 
-
+//Destructor
 DJSession::~DJSession() {
     std::cout << "Shutting down DJ Session System: " << session_name << std::endl;
+}
+//Copy Constructor
+DJSession::DJSession(const DJSession& other) 
+    : session_name(other.session_name), 
+      library_service(other.library_service), // קורא ל-Copy Constructor של DJLibraryService
+      controller_service(other.controller_service), // קורא ל-Copy Constructor של DJControllerService
+      mixing_service(other.mixing_service), // קורא ל-Copy Constructor של MixingEngineService
+      session_config(other.session_config), // Copy Constructor סטנדרטי
+      track_titles(other.track_titles),
+      play_all(other.play_all),
+      stats(other.stats)
+{
+    // הגוף נשאר ריק מכיוון שכל ההעתקה מתבצעת ברשימת האתחול (Initializer List)
+    std::cout << "DJ Session copy constructor called for: " << session_name << std::endl;
+}
+
+//Copy Assignment Operator
+DJSession& DJSession::operator=(const DJSession& other) {
+    if (this == &other) {return *this;}
+    DJSession temp(other);
+    this->swap(temp);
+    return *this;
+}
+
+// בתוך DJSession.cpp (או כ-member function)
+
+// מתודת עזר פנימית להחלפת כל המשאבים
+void DJSession::swap(DJSession& other) noexcept {
+    // החלפת המשאבים המורכבים (הם כבר Copy/Move Safe)
+    std::swap(session_name, other.session_name);
+    std::swap(library_service, other.library_service); 
+    std::swap(controller_service, other.controller_service);
+    std::swap(mixing_service, other.mixing_service);
+    
+    // החלפת חברי הנתונים הפשוטים והסטטיסטיקות
+    std::swap(config_manager, other.config_manager);
+    std::swap(session_config, other.session_config);
+    std::swap(track_titles, other.track_titles);
+    std::swap(play_all, other.play_all);
+    std::swap(stats, other.stats);
 }
 
 // ========== CORE FUNCTIONALITY ==========
@@ -63,8 +103,31 @@ bool DJSession::load_playlist(const std::string& playlist_name)  {
 
  */
 int DJSession::load_track_to_controller(const std::string& track_name) {
-    // Your implementation here
-    return 0; // Placeholder
+    //1. Track Retrieval: 
+    const AudioTrack* track(library_service.findTrack(track_name)); 
+    if (!track) {
+        std::cout << "[ERROR] track name is not in library." << std::endl;
+        stats.errors++;
+        return 0;
+    }
+    //2. Controller Loading: 
+    //const_cast - telling the program to ignore the const. Need to pass a reference, not a const ptr.
+    int result = controller_service.loadTrackToCache(const_cast<AudioTrack&>(*track));
+    switch (result) {
+        case 1: 
+            stats.cache_hits++;
+            break;
+        case 0: 
+            stats.cache_misses++;
+            break;
+        case -1:
+            stats.cache_evictions++;
+            stats.cache_misses++;
+            break;
+        default:
+            std::cout << "[ERROR] impossible return value from loadTrackToCache. Stats unchanged." << std::endl;
+    }
+    return result;
 }
 
 /**
@@ -75,8 +138,32 @@ int DJSession::load_track_to_controller(const std::string& track_name) {
  */
 bool DJSession::load_track_to_mixer_deck(const std::string& track_title) {
     std::cout << "[System] Delegating track transfer to MixingEngineService for: " << track_title << std::endl;
-    // your implementation here
-    return false; // Placeholder
+    AudioTrack* track = controller_service.getTrackFromCache(track_title);
+    if(!track) {
+        std::cout << "[ERROR] MISS: load_to_mixer_deck failed: track doesn't exist." << std::endl;
+        stats.errors++;
+        return false;
+    }
+    int deck = mixing_service.loadTrackToDeck((*track));
+    switch (deck) {
+        case 0:
+            std::cout << "Track Loaded to Deck A" << std::endl;
+            stats.deck_loads_a++;
+            stats.transitions++;
+            break;
+        case 1: 
+            std::cout << "Track Loaded to Deck B" << std::endl;
+            stats.deck_loads_b++;
+            stats.transitions++;
+            break;
+        case -1:
+            std::cout << "Track Loading to Deck Failed." << std::endl;
+            stats.errors++;
+            break;
+        default:
+            break;
+    }
+    return deck == 1 || deck == 0; 
 }
 
 /**
@@ -108,7 +195,51 @@ void DJSession::simulate_dj_performance() {
     std::cout << "\n--- Processing Tracks ---" << std::endl;
 
     std::cout << "TODO: Implement the DJ performance simulation workflow here." << std::endl;
-    // Your implementation here
+    //איטרטור שרץ על המפה
+    auto playlist_it = session_config.playlists.begin();
+    std::string selected_playlist_name;
+    
+    while(true) {
+        if (play_all) { //מצב אוטומטי - איטרציה על כל הלולאות בעזרת איטרטור על המפה
+            if (playlist_it == session_config.playlists.end()) {
+                break; // נגמרו הפלייליסטים - יציאה מהלולאה
+            }
+            // האיטרטור מחזיר pair<string, vector<int>>, ניקח רק את השם (first)
+            selected_playlist_name = playlist_it->first; 
+            playlist_it++; // מקדמים לאיטרציה הבאה
+            
+        } 
+        else {
+            // מצב אינטראקטיבי: מקבלים בחירה מהמשתמש
+            selected_playlist_name = display_playlist_menu_from_config();
+            if (selected_playlist_name.empty()) {
+                break; // המשתמש בחר 0 (Cancel) - יציאה מהלולאה
+            }
+        }
+        
+        //continue אם הפלייליסט ריק או לא קיים
+        if (!load_playlist(selected_playlist_name)) {
+            continue; 
+        }
+        
+        stats.transitions = 0; // מאפסים ספירת מעברים עבור כל פלייליסט 
+        
+        // עוברים על רשימת כותרות השירים שנטענה בתוך load_playlist
+        for (const std::string& track_title : track_titles) {
+            load_track_to_controller(track_title);
+            load_track_to_mixer_deck(track_title);
+            stats.tracks_processed++; // מעדכנים סה"כ שירים שעיבדנו
+        }
+
+        print_session_summary();
+        //מאפסים סטטיסטיקות ספציפיות לפלייליסט הזה
+        stats.cache_hits = 0;
+        stats.cache_misses = 0;
+        stats.cache_evictions = 0;
+        stats.deck_loads_a = 0;
+        stats.deck_loads_b = 0;
+        stats.transitions = 0;
+    }
 }
 
 

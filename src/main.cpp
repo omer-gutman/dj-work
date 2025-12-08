@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
      * - If "-I" is provided as the first argument, run interactive DJ software
      * - If "-A" is provided as the second argument, enable play_all mode
      */
-    bool run_software = false;
+    bool run_software = true;
     bool play_all = false;
     if (argc > 1 && std::string(argv[1]) == "-I") {
         run_software = true;

@@ -98,7 +98,6 @@ const AudioTrack* DJLibraryService::findTrack(const std::string& track_title) co
     for(const AudioTrack* track : this->library) {
         if ((*track).get_title() == track_title) return track;
     }
-    std::cout << "Track Doesn't Exist In Library" << std::endl;
     return nullptr;
 }
 
@@ -114,11 +113,22 @@ void DJLibraryService::loadPlaylistFromIndices(const std::string& playlist_name,
     this->playlist = empty;
     for(int i : track_indices) {
         if(i > 0 && i <= this->library.size()) {
-            AudioTrack* temp = this->library[i-1]->clone().release();
+            if (this->library[i-1] == nullptr) {
+                 std::cout << "[ERROR] Library pointer at " << (i-1) << " is NULL!" << std::endl;
+                 continue;
+            }
+
+            PointerWrapper<AudioTrack> cloned_wrapper = this->library[i-1]->clone();
+            
+            AudioTrack* temp = cloned_wrapper.release();
+            if (temp == nullptr) {
+                std::cout << "[ERROR] Temp pointer is NULL after release!" << std::endl;
+                continue;
+            }
             temp->load();
             temp->analyze_beatgrid();
             this->playlist.add_track(temp);
-        }
+        } 
     }
 }
 /**

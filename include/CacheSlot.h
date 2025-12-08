@@ -28,6 +28,12 @@ public:
      * @brief Construct empty cache slot
      */
     CacheSlot();
+
+    // Copy Constructor
+    CacheSlot(const CacheSlot& other);
+    
+    // אופציונלי אך מומלץ (Copy Assignment)
+    CacheSlot& operator=(const CacheSlot& other);
     
     /**
      * @brief Store a track in this slot
